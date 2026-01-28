@@ -5,22 +5,22 @@ import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 
 
-# Get user input for the city
-city_input = input("Enter the city name: ")
+# Get user input for the location
+location = input("Example format: 'Vancouver, Canada' or 'Paris, France'\nEnter city and country: ")
 
-# Geocoding: Convert city name to Latitude/Longitude
-geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={city_input}&count=1&language=en&format=json"
+# Get location data
+geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={location}&count=1&language=en&format=json"
 geo_response = requests.get(geo_url).json()
 
 if not geo_response.get('results'):
-    print(f"Could not find coordinates for '{city_input}'. Please check the spelling.")
+    print(f"Could not find coordinates for '{location}'. Please check the spelling.")
     exit()
 
 # Extract location details
 location = geo_response['results'][0]
 latitude = location['latitude']
 longitude = location['longitude']
-city_name = location['name']
+city = location['name']
 country = location.get('country', '')
 
 
@@ -66,17 +66,22 @@ plt.plot(df['date'], df['min_temp'], marker = 'o', label = 'Min Temp')
 # Add labels and title
 plt.xlabel('Date')
 plt.ylabel('Temperature (°C)')
-plt.title(f'{city_name} Weather - Past 7 Days')
+plt.title(f'{city}, {country} Weather - Past 7 Days')
 plt.legend()
 
 # Rotate x-axis labels for readability
 plt.xticks(rotation = 45)
 plt.tight_layout()
 
-# Save the plot
-plt.savefig(f'{city_name}_weather_chart.png')
-plt.show()
 
+# Create charts folder if it doesn't exist
+if not os.path.exists('charts'):
+    os.makedirs('charts')
+
+# Save the plot
+plt.savefig(f'charts/{city}_{country}_weather_chart.png')
+print(f"Plot saved to charts/{city}_{country}_weather_chart.png")
+plt.show()
 
 
 # Create data folder if it doesn't exist
@@ -84,5 +89,5 @@ if not os.path.exists('data'):
     os.makedirs('data')
 
 # Save to CSV
-df.to_csv(f'data/{city_name}_weather.csv', index = False)
-print(f"Data saved to data/{city_name}_weather.csv")
+df.to_csv(f'data/{city}_{country}_weather.csv', index = False)
+print(f"Data saved to data/{city}_{country}_weather.csv")
